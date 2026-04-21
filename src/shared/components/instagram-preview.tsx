@@ -24,8 +24,8 @@ export function InstagramPreview({
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-sm mx-auto">
-      {/* Phone Frame */}
-      <div className="relative w-[320px] h-[640px] bg-black rounded-[3rem] border-[8px] border-zinc-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden scale-90 sm:scale-100 transition-transform origin-top">
+      {/* Phone Frame - Proporção exata de 9:16 (360x640) */}
+      <div className="relative w-[360px] h-[640px] bg-black rounded-[3rem] border-[8px] border-zinc-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden scale-90 sm:scale-100 transition-transform origin-top">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-900 rounded-b-2xl z-50"></div>
 
@@ -51,12 +51,12 @@ export function InstagramPreview({
                 <MoreHorizontal className="w-4 h-4" />
               </div>
 
-              {/* Main Image */}
-              <div className="aspect-square w-full bg-zinc-900 flex items-center justify-center overflow-hidden">
+              {/* Main Image - Feed mantido com object-contain para 1:1 e 4:5 */}
+              <div className="w-full max-h-[450px] bg-black flex items-center justify-center overflow-hidden">
                 {currentImageUrl ? (
-                  <img src={currentImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={currentImageUrl} alt="Preview" className="w-full h-auto max-h-[450px] object-contain" />
                 ) : (
-                  <div className="text-zinc-700 flex flex-col items-center gap-2">
+                  <div className="text-zinc-700 flex flex-col items-center gap-2 py-20">
                     <Grid3X3 className="w-12 h-12" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Aguardando Arte</span>
                   </div>
@@ -117,8 +117,8 @@ export function InstagramPreview({
                 </div>
               </div>
 
-              {/* Image */}
-              <div className="w-full h-full">
+              {/* Image - Corrigido para absolute inset-0 e object-cover para preencher toda a tela 9:16 */}
+              <div className="absolute inset-0 w-full h-full bg-black z-0">
                 {currentImageUrl ? (
                   <img src={currentImageUrl} alt="Stories" className="w-full h-full object-cover" />
                 ) : (
@@ -148,7 +148,7 @@ export function InstagramPreview({
           onClick={() => setType('FEED')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${type === 'FEED' ? 'bg-primary text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}
         >
-          Feed (1:1)
+          Feed (1:1 / 4:5)
         </button>
         <button 
           onClick={() => setType('STORIES')}

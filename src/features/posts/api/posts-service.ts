@@ -13,7 +13,7 @@ export interface Post {
   assignedDesignerId: string | null;
   currentVersionId: string | null;
   createdAt: string;
-  assets?: Array<{ cloudinaryUrl: string; assetType: string }>;
+  assets?: Array<{ id: string; cloudinaryUrl: string; assetType: string; createdAt: string }>;
   currentVersion?: { feedUrl: string | null; storiesUrl: string | null };
 }
 
@@ -38,6 +38,11 @@ export const postsService = {
     return response.data;
   },
 
+  getById: async (id: string) => {
+    const response = await api.get<Post>(`/posts/${id}`);
+    return response.data;
+  },
+
   create: async (data: CreatePostRequest) => {
     const response = await api.post<Post>('/posts', data);
     return response.data;
@@ -45,6 +50,11 @@ export const postsService = {
 
   update: async (id: string, data: Partial<CreatePostRequest>) => {
     const response = await api.patch<Post>(`/posts/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete<Post>(`/posts/${id}`);
     return response.data;
   },
 
@@ -71,6 +81,18 @@ export const postsService = {
     // Note: A API requer organizationId no body de acordo com os DTOs de atualização se for generic, 
     // mas o endpoint de status costuma ser específico. Vamos usar PATCH para o post.
     const response = await api.patch(`/posts/${postId}`, { status });
+    return response.data;
+  },
+
+  replaceAsset: async (assetId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.patch(`/assets/${assetId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 };

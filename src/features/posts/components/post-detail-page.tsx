@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { postsService } from '../api/posts-service';
 import { InstagramPreview } from '@/shared/components/instagram-preview';
 import { GlassCard } from '@/shared/components/glass-card';
+import { ReplaceAssetModal } from './replace-asset-modal';
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -15,7 +16,8 @@ import {
   Calendar,
   User,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  RotateCw
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -26,14 +28,18 @@ export default function PostDetailPage() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [copied, setCopied] = useState(false);
+  const [isReplaceAssetModalOpen, setIsReplaceAssetModalOpen] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [selectedAssetType, setSelectedAssetType] = useState<'FEED' | 'STORIES'>('FEED');
 
   const role = user?.role?.toUpperCase();
   const isAdmin = role === 'ADMIN';
+  const isDesigner = role === 'DESIGNER';
   const isClient = role === 'CLIENT';
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['post', postId],
-    queryFn: () => postsService.getByCampaign(campId!).then(posts => posts.find(p => p.id === postId)),
+    queryFn: () => postsService.getById(postId!),
     enabled: !!postId
   });
 
@@ -64,8 +70,17 @@ export default function PostDetailPage() {
 
   if (!post) return <div>Post não encontrado.</div>;
 
-  const feedUrl = post.currentVersion?.feedUrl || post.assets?.[0]?.cloudinaryUrl || null;
-  const storiesUrl = post.currentVersion?.storiesUrl || null;
+  // LÓGICA CORRIGIDA: Encontra o asset específico e mais recente pelo seu tipo.
+  // Ordena por data de criação para garantir que o mais novo seja pego.
+  const feedAsset = post.assets?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).find(a => a.assetType === 'FEED');
+  const storiesAsset = post.assets?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).find(a => a.assetType === 'STORIES');
+
+  // Usa a URL e o ID do asset encontrado.
+  const feedUrl = feedAsset?.cloudinaryUrl || null;
+  const storiesUrl = storiesAsset?.cloudinaryUrl || null;
+
+  const feedAssetId = feedAsset?.id || null;
+  const storiesAssetId = storiesAsset?.id || null;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -102,14 +117,13 @@ export default function PostDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-zinc-400">
                   <User className="w-4 h-4 text-primary" />
-                  <span className="font-medium text-white">Designer: Fernanda</span>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Briefing Operacional</h4>
-                  <p className="text-sm text-zinc-400 leading-relaxed bg-white/[0.02] border border-white/5 rounded-2xl p-5 italic">
+                  <p className="text-sm text-zinc-400 leading-relaxed bg-white/2 border border-white/5 rounded-2xl p-5 italic">
                     "{post.briefing || 'Nenhum briefing fornecido.'}"
                   </p>
                 </div>
@@ -131,42 +145,44 @@ export default function PostDetailPage() {
                 </div>
               </div>
 
-              {/* Approval Panel */}
-              <div className="mt-10 pt-8 border-t border-white/5">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {post.status !== 'APPROVED' && (
-                    <button 
-                      onClick={() => updateStatusMutation.mutate('APPROVED')}
-                      disabled={updateStatusMutation.isPending || !post.currentVersionId}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] disabled:opacity-50 disabled:grayscale"
-                    >
-                      <CheckCircle className="w-5 h-5" />
-                      Aprovar Postagém
-                    </button>
+              {/* Approval Panel - Only for CLIENT */}
+              {isClient && (
+                <div className="mt-10 pt-8 border-t border-white/5">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {post.status !== 'APPROVED' && (
+                      <button 
+                        onClick={() => updateStatusMutation.mutate('APPROVED')}
+                        disabled={updateStatusMutation.isPending || !post.currentVersionId}
+                        className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] disabled:opacity-50 disabled:grayscale"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                        Aprovar Postagém
+                      </button>
+                    )}
+                    {post.status !== 'CANCELLED' && (
+                      <button 
+                        onClick={() => updateStatusMutation.mutate('ALTERATION_REQUESTED')}
+                        disabled={updateStatusMutation.isPending || !post.currentVersionId}
+                        className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(245,158,11,0.2)] disabled:opacity-50 disabled:grayscale"
+                      >
+                        <AlertCircle className="w-5 h-5" />
+                        Solicitar Ajuste
+                      </button>
+                    )}
+                  </div>
+                  {!post.currentVersionId && (
+                    <p className="text-[10px] text-zinc-500 text-center mt-4">
+                      Aguardando a designer fazer o upload da primeira versão para habilitar aprovação.
+                    </p>
                   )}
-                  {post.status !== 'CANCELLED' && (
-                    <button 
-                      onClick={() => updateStatusMutation.mutate('ALTERATION_REQUESTED')}
-                      disabled={updateStatusMutation.isPending || !post.currentVersionId}
-                      className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(245,158,11,0.2)] disabled:opacity-50 disabled:grayscale"
-                    >
-                      <AlertCircle className="w-5 h-5" />
-                      Solicitar Ajuste
-                    </button>
+                  {post.status === 'APPROVED' && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-3 text-emerald-400">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-bold text-sm uppercase tracking-wider">Este post foi aprovado!</span>
+                    </div>
                   )}
                 </div>
-                {!post.currentVersionId && (
-                  <p className="text-[10px] text-zinc-500 text-center mt-4">
-                    Aguardando a designer fazer o upload da primeira versão para habilitar aprovação.
-                  </p>
-                )}
-                {post.status === 'APPROVED' && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-3 text-emerald-400">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="font-bold text-sm uppercase tracking-wider">Este post foi aprovado!</span>
-                  </div>
-                )}
-              </div>
+              )}
             </GlassCard>
           </motion.div>
 
@@ -188,6 +204,7 @@ export default function PostDetailPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
+            className="space-y-4"
           >
             <InstagramPreview 
               feedUrl={feedUrl}
@@ -195,9 +212,59 @@ export default function PostDetailPage() {
               username={orgId || 'socialflow'}
               caption={post.captionFixed}
             />
+
+            {/* Replace Asset Buttons - Visible for ADMIN and DESIGNER */}
+            {(isAdmin || isDesigner) && (post.currentVersion?.feedUrl || post.currentVersion?.storiesUrl) && (
+              <div className="space-y-3 pt-4">
+                {post.currentVersion?.feedUrl && (
+                  <button
+                    onClick={() => {
+                      setSelectedAssetId(feedAssetId || 'feed-placeholder');
+                      setSelectedAssetType('FEED');
+                      setIsReplaceAssetModalOpen(true);
+                    }}
+                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-all"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                    Reuplocar Feed
+                  </button>
+                )}
+                
+                {post.currentVersion?.storiesUrl && (
+                  <button
+                    onClick={() => {
+                      setSelectedAssetId(storiesAssetId || 'stories-placeholder');
+                      setSelectedAssetType('STORIES');
+                      setIsReplaceAssetModalOpen(true);
+                    }}
+                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition-all"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                    Reuplocar Stories
+                  </button>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
+
+      {/* Replace Asset Modal */}
+      {selectedAssetId && (
+        <ReplaceAssetModal
+          isOpen={isReplaceAssetModalOpen}
+          onClose={() => {
+            setIsReplaceAssetModalOpen(false);
+            setSelectedAssetId(null);
+          }}
+          assetId={selectedAssetId !== 'feed-placeholder' && selectedAssetId !== 'stories-placeholder' ? selectedAssetId : undefined}
+          currentAssetUrl={selectedAssetType === 'FEED' ? feedUrl || undefined : storiesUrl || undefined}
+          assetType={selectedAssetType}
+          postId={postId!}
+          campaignId={campId!}
+          currentImageUrl={selectedAssetType === 'FEED' ? feedUrl || undefined : storiesUrl || undefined}
+        />
+      )}
     </div>
   );
 }

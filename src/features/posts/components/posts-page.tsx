@@ -11,7 +11,6 @@ import {
   CheckCircle2, 
   AlertCircle, 
   XCircle, 
-  MoreVertical,
   Image as ImageIcon,
   MessageSquare,
   Loader2
@@ -21,7 +20,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { campaignsService } from '@/features/campaigns/api/campaigns-service';
 import { postsService } from '../api/posts-service';
 import { CreatePostModal } from './create-post-modal';
+import { EditPostModal } from './edit-post-modal';
+import { DeletePostModal } from './delete-post-modal';
 import { UploadVersionModal } from './upload-version-modal';
+import { PostActionsMenu } from './post-actions-menu';
 import { Upload } from 'lucide-react';
 
 export default function PostsPage() {
@@ -29,6 +31,8 @@ export default function PostsPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   
@@ -106,6 +110,10 @@ export default function PostsPage() {
           const status = getStatusConfig(post.status);
           const Icon = status.icon;
 
+          // Buscar o asset mais recente do tipo FEED
+          const feedAsset = post.assets?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).find(a => a.assetType === 'FEED');
+          const previewUrl = post.currentVersion?.feedUrl || feedAsset?.cloudinaryUrl || null;
+
           return (
             <motion.div
               key={post.id}
@@ -119,21 +127,31 @@ export default function PostsPage() {
                     <Icon className="w-3 h-3" />
                     {status.label}
                   </div>
-                  <button className="text-zinc-600 hover:text-white transition-colors">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
+                  <PostActionsMenu 
+                    postId={post.id}
+                    isAdmin={isAdmin}
+                    onEdit={(postId) => {
+                      setSelectedPostId(postId);
+                      setIsEditModalOpen(true);
+                    }}
+                    onDelete={(postId) => {
+                      setSelectedPostId(postId);
+                      setIsDeleteModalOpen(true);
+                    }}
+                  />
                 </div>
 
                 <div className="flex-1 space-y-4">
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/5 mb-4 group-hover:border-primary/20 transition-all">
-                    {post.currentVersion?.feedUrl || (post.assets && post.assets.length > 0) ? (
+                  {/* Container da Imagem: Altura adaptável com min-h para quem não tem imagem */}
+                  <div className="relative w-full rounded-xl overflow-hidden bg-black/20 border border-white/5 mb-4 group-hover:border-primary/20 transition-all min-h-[250px] flex flex-col items-center justify-center">
+                    {previewUrl ? (
                       <img 
-                        src={post.currentVersion?.feedUrl || post.assets?.[0]?.cloudinaryUrl} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        src={previewUrl} 
+                        className="w-full h-auto max-h-[400px] object-contain transition-transform duration-500 group-hover:scale-105"
                         alt="Preview do Post"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600 gap-2">
+                      <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-zinc-600 gap-2">
                         <ImageIcon className="w-8 h-8 opacity-20" />
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Sem Arte</span>
                       </div>
@@ -239,15 +257,38 @@ export default function PostsPage() {
       />
 
       {selectedPostId && (
-        <UploadVersionModal 
-          isOpen={isUploadModalOpen}
-          onClose={() => {
-            setIsUploadModalOpen(false);
-            setSelectedPostId(null);
-          }}
-          postId={selectedPostId}
-          campaignId={campaignId!}
-        />
+        <>
+          <EditPostModal 
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedPostId(null);
+            }}
+            postId={selectedPostId}
+            campaignId={campaignId!}
+          />
+
+          <DeletePostModal 
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedPostId(null);
+            }}
+            postId={selectedPostId}
+            campaignId={campaignId!}
+            orgId={orgId}
+          />
+
+          <UploadVersionModal 
+            isOpen={isUploadModalOpen}
+            onClose={() => {
+              setIsUploadModalOpen(false);
+              setSelectedPostId(null);
+            }}
+            postId={selectedPostId}
+            campaignId={campaignId!}
+          />
+        </>
       )}
     </div>
   );
