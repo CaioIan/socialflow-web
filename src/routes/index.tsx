@@ -6,6 +6,7 @@ import OrganizationsPage from '@/features/organizations/components/organizations
 import CampaignsPage from '@/features/campaigns/components/campaigns-page';
 import PostsPage from '@/features/posts/components/posts-page';
 import PostDetailPage from '@/features/posts/components/post-detail-page';
+import TeamPage from '@/features/team/components/team-page';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
       {
         path: 'organizations/:orgId/campaigns/:campId/posts/:postId',
         element: <PostDetailPage />,
+      },
+      {
+        path: 'team',
+        element: <TeamPage />,
       },
       // Rota de fallback dentro do layout para /dashboard antigo ou similares
       {

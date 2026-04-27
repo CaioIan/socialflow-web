@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,12 +33,7 @@ export function EditPostModal({ isOpen, onClose, postId, campaignId }: EditPostM
     enabled: isOpen && !!postId,
   });
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<EditPostForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<EditPostForm>({
     resolver: zodResolver(editPostSchema),
     values: post ? {
       scheduledFor: new Date(post.scheduledFor).toISOString().slice(0, 16),

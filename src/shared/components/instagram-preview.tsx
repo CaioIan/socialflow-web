@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useState } from 'react';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, User, Grid3X3, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,9 +22,9 @@ export function InstagramPreview({
   const currentImageUrl = type === 'FEED' ? feedUrl : storiesUrl;
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-sm mx-auto">
+    <div className="flex flex-col items-center gap-6 w-full max-w-sm mx-auto overflow-hidden">
       {/* Phone Frame - Proporção exata de 9:16 (360x640) */}
-      <div className="relative w-[360px] h-[640px] bg-black rounded-[3rem] border-[8px] border-zinc-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden scale-90 sm:scale-100 transition-transform origin-top">
+      <div className="relative w-full aspect-[9/16] sm:w-[360px] sm:h-[640px] max-h-[85vh] bg-black rounded-[2.5rem] sm:rounded-[3rem] border-[6px] sm:border-[8px] border-zinc-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden transition-transform origin-top">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-900 rounded-b-2xl z-50"></div>
 

@@ -60,7 +60,7 @@ export default function CampaignsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="space-y-1">
           <Link 
             to="/organizations" 
@@ -69,17 +69,17 @@ export default function CampaignsPage() {
             <ArrowLeft className="w-3 h-3" />
             Voltar para Organizações
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight text-glow flex items-center gap-3">
-            <span className="text-zinc-500 font-normal">Campanhas /</span> 
-            {activeOrg?.name || 'Empresa'}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-glow flex items-center gap-3">
+            <span className="text-zinc-500 font-normal shrink-0">Campanhas /</span> 
+            <span className="truncate">{activeOrg?.name || 'Empresa'}</span>
           </h1>
-          <p className="text-zinc-500">Pastas de artes e cronogramas mensais.</p>
+          <p className="text-zinc-500 text-sm">Pastas de artes e cronogramas mensais.</p>
         </div>
         
         {isAdmin && (
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-[0_0_25px_oklch(var(--primary)/0.3)]"
+            className="bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_oklch(var(--primary)/0.3)] w-full sm:w-auto"
           >
             <Plus className="w-5 h-5" />
             Nova Campanha
@@ -87,7 +87,7 @@ export default function CampaignsPage() {
         )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {campaigns.map((campaign, index) => (
           <motion.div
             key={campaign.id}
@@ -96,17 +96,17 @@ export default function CampaignsPage() {
             transition={{ delay: index * 0.1 }}
             onClick={() => navigate(`/organizations/${id}/campaigns/${campaign.id}/posts`)}
           >
-            <GlassCard className="group hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden h-full">
+            <GlassCard className="group hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden h-full active:scale-[0.98] transition-transform">
               {isAdmin && (
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEdit(campaign);
                     }}
-                    className="p-2 rounded-lg bg-black/20 hover:bg-white/10 text-zinc-400 hover:text-white transition-all backdrop-blur-md shadow-xl"
+                    className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-xl bg-black/40 md:bg-black/20 hover:bg-white/10 text-white md:text-zinc-400 md:hover:text-white transition-all backdrop-blur-md shadow-xl border border-white/5 active:scale-90"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                   </button>
                   <button 
                     onClick={(e) => {
@@ -115,9 +115,9 @@ export default function CampaignsPage() {
                         deactivateMutation.mutate(campaign.id);
                       }
                     }}
-                    className="p-2 rounded-lg bg-black/20 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-all backdrop-blur-md shadow-xl"
+                    className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-xl bg-black/40 md:bg-black/20 hover:bg-red-500/20 text-white md:text-zinc-400 md:hover:text-red-400 transition-all backdrop-blur-md shadow-xl border border-white/5 active:scale-90"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                   </button>
                 </div>
               )}

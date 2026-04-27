@@ -78,9 +78,7 @@ export const postsService = {
   },
 
   updateStatus: async (postId: string, status: PostStatus) => {
-    // Note: A API requer organizationId no body de acordo com os DTOs de atualização se for generic, 
-    // mas o endpoint de status costuma ser específico. Vamos usar PATCH para o post.
-    const response = await api.patch(`/posts/${postId}`, { status });
+    const response = await api.patch<Post>(`/posts/${postId}/status`, { status });
     return response.data;
   },
 

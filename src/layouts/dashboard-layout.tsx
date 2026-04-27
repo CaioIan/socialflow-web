@@ -1,60 +1,105 @@
-import { Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '@/shared/components/sidebar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { OrganizationSelector } from '@/features/auth/components/organization-selector';
+import { Menu, X } from 'lucide-react';
 
 export function DashboardLayout() {
   const { currentOrganizationId, organizations, user } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   // Trava de segurança: somente CLIENTS são obrigados a selecionar empresa no boot.
-  // ADMIN e DESIGNER têm livre trânsito para o Dashboard Geral.
   const userRole = user?.role?.toUpperCase();
   const isClient = userRole === 'CLIENT';
-  const isAdminOrDesigner = userRole === 'ADMIN' || userRole === 'DESIGNER';
 
   const activeOrg = organizations.find(org => org.organizationId === currentOrganizationId);
 
-  // Se for Cliente e não tiver org selecionada, mostra seletor.
-  // Caso contrário (Admin, Designer ou carregando), segue para o Dashboard.
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path.includes('/campaigns')) return 'Campanhas';
+    if (path.includes('/posts')) return 'Cronograma';
+    if (path.includes('/organizations')) return 'Organizações';
+    if (path.includes('/team')) return 'Equipe';
+    if (path === '/dashboard') {
+      if (userRole === 'CLIENT') return 'Minhas Aprovações';
+      if (userRole === 'DESIGNER') return 'Minha Pauta';
+      return 'Dashboard Central';
+    }
+    return 'SocialFlow';
+  };
+
   if (isClient && !currentOrganizationId) {
     return <OrganizationSelector />;
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="flex min-h-screen bg-[#0a0a0a]">
+      {/* Sidebar - Desktop & Mobile */}
+      <Sidebar 
+        isOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+        />
 
-      <main className="flex-1 ml-64 min-h-screen">
+      {/* Overlay para fechar menu mobile ao clicar fora */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <main className="flex-1 md:ml-64 min-h-screen flex flex-col w-full overflow-hidden">
         {/* Navbar / Header area */}
-        <header className="h-20 border-b border-white/5 bg-black/10 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">SocialFlow</h2>
-            <h1 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_oklch(var(--primary))]" />
-              {activeOrg?.name || 'Dashboard Central'}
-            </h1>
+        <header className="h-20 border-b border-white/5 bg-black/10 backdrop-blur-md sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 overflow-hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 hover:bg-white/5 rounded-xl text-zinc-400 md:hidden"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            
+            <div className="overflow-hidden">
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 truncate">
+                {activeOrg?.name ? `Organização: ${activeOrg.name}` : 'Painel Geral'}
+              </h2>
+              <h1 className="text-sm md:text-lg font-bold text-white flex items-center gap-2 truncate">
+                <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_oklch(var(--primary))] shrink-0" />
+                <span className="truncate">{getPageTitle()}</span>
+              </h1>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Aqui entrará o Organização Switcher e Avatar */}
-            <div className="flex flex-col items-end mr-2">
-              <span className="text-sm font-medium text-white select-none">Usuário</span>
-              <span className="text-[10px] text-zinc-500 uppercase tracking-tighter">Admin</span>
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
+            <div className="hidden sm:flex flex-col items-end mr-2">
+              <span className="text-sm font-medium text-white select-none truncate max-w-[150px]">
+                {user?.name || 'Usuário'}
+              </span>
+              <span className="text-[10px] text-zinc-500 uppercase tracking-tighter font-bold">
+                {user?.role === 'ADMIN' ? 'Administrador' : user?.role === 'DESIGNER' ? 'Designer' : 'Cliente'}
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary font-bold">
-              U
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary font-bold shadow-[0_0_15px_oklch(var(--primary)/0.1)]">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
           </div>
         </header>
 
         {/* Content area */}
         <motion.div
-          key={currentOrganizationId} // Remontar ao trocar de org
+          key={currentOrganizationId}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="p-8"
+          className="p-4 md:p-8 flex-1"
         >
           <Outlet />
         </motion.div>

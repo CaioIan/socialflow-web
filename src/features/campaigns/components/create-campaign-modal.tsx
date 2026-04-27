@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/components/modal';
 import { campaignsService } from '../api/campaigns-service';
-import { Loader2, Calendar } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const createCampaignSchema = z.object({
   title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres').max(255),
@@ -38,7 +38,7 @@ export function CreateCampaignModal({ isOpen, onClose, initialData }: CreateCamp
     setValue,
     formState: { errors },
   } = useForm<CreateCampaignForm>({
-    resolver: zodResolver(createCampaignSchema),
+    resolver: zodResolver(createCampaignSchema) as any,
     defaultValues: {
       title: initialData?.title || '',
       referenceYear: (initialData?.referenceYear || currentYear).toString() as any,
@@ -79,7 +79,7 @@ export function CreateCampaignModal({ isOpen, onClose, initialData }: CreateCamp
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Campanha' : 'Nova Campanha'}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium text-zinc-400">
             Título da Campanha

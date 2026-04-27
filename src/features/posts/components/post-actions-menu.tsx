@@ -1,4 +1,4 @@
-import * as React from 'react';
+
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
 

@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { GlassCard } from '@/shared/components/glass-card';
-import { Building2, ArrowRight, ExternalLink, Plus, Loader2, Edit2, Trash2 } from 'lucide-react';
+import { Building2, ArrowRight, Plus, Loader2, Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '@/features/auth/api/auth-service';
@@ -96,30 +97,36 @@ export default function OrganizationsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
+              onClick={() => !selectMutation.isPending && selectMutation.mutate(orgId)}
+              className="cursor-pointer group"
             >
               <GlassCard 
-                className={`group flex flex-col h-full border-t-4 transition-all duration-500 relative overflow-hidden ${
+                className={`flex flex-col h-full border-t-4 transition-all duration-500 relative overflow-hidden active:scale-[0.98] ${
                   isActive ? 'border-t-primary bg-primary/[0.03]' : 'border-t-transparent'
                 }`}
               >
                 {/* Botões de Ação Rápida (Admin) */}
                 {isAdmin && (
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                     <button 
-                      onClick={() => handleEdit({ id: orgId, name: org.name })}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all shadow-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit({ id: orgId, name: org.name });
+                      }}
+                      className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-xl bg-black/40 md:bg-white/5 hover:bg-white/10 text-white md:text-zinc-400 md:hover:text-white transition-all shadow-xl border border-white/5 active:scale-90"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                     </button>
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if(window.confirm('Deseja realmente desativar esta organização?')) {
                           deleteMutation.mutate(orgId);
                         }
                       }}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-all shadow-xl"
+                      className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-xl bg-black/40 md:bg-white/5 hover:bg-red-500/10 text-white md:text-zinc-400 md:hover:text-red-400 transition-all shadow-xl border border-white/5 active:scale-90"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                     </button>
                   </div>
                 )}
@@ -147,10 +154,11 @@ export default function OrganizationsPage() {
                 </div>
 
                 <div className="mt-8">
-                  <button
-                    onClick={() => selectMutation.mutate(orgId)}
-                    disabled={selectMutation.isPending}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm bg-white/5 hover:bg-primary text-white transition-all hover:shadow-[0_0_20px_oklch(var(--primary)/0.4)] disabled:opacity-50 active:scale-[0.98]"
+                  <div
+                    className={cn(
+                      "w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all",
+                      isActive ? "bg-primary text-white shadow-[0_0_20px_oklch(var(--primary)/0.4)]" : "bg-white/5 group-hover:bg-primary/20 text-white"
+                    )}
                   >
                     {selectMutation.isPending && selectMutation.variables === orgId ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -160,7 +168,7 @@ export default function OrganizationsPage() {
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
-                  </button>
+                  </div>
                 </div>
               </GlassCard>
             </motion.div>
