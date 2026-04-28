@@ -9,11 +9,13 @@ import { authService } from '@/features/auth/api/auth-service';
 import { organizationsService } from '../api/organizations-service';
 import { useNavigate } from 'react-router-dom';
 import { CreateOrganizationModal } from './create-organization-modal';
+import { useToastStore } from '@/stores/use-toast-store';
 
 export default function OrganizationsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, setCurrentOrganization, currentOrganizationId } = useAuthStore();
+  const { addToast } = useToastStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<{ id: string, name: string } | undefined>(undefined);
 
@@ -39,7 +41,11 @@ export default function OrganizationsPage() {
     mutationFn: authService.selectOrganization,
     onSuccess: (_, organizationId) => {
       setCurrentOrganization(organizationId);
+      addToast('Organização selecionada!', 'success');
       navigate(`/organizations/${organizationId}/campaigns`);
+    },
+    onError: () => {
+      addToast('Erro ao selecionar organização.', 'error');
     },
   });
 
@@ -47,6 +53,10 @@ export default function OrganizationsPage() {
     mutationFn: organizationsService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      addToast('Organização desativada com sucesso!', 'success');
+    },
+    onError: () => {
+      addToast('Erro ao desativar organização.', 'error');
     },
   });
 

@@ -2,18 +2,18 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import { authService } from '../api/auth-service';
 import { loginSchema, type LoginFormData } from '../schemas/login-schema';
 import { useAuthStore } from '@/stores/use-auth-store';
+import { useToastStore } from '@/stores/use-toast-store';
 import { GlassCard } from '@/shared/components/glass-card';
-import { useState } from 'react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { addToast } = useToastStore();
 
   const {
     register,
@@ -25,18 +25,17 @@ export default function LoginPage() {
     mutationFn: authService.login,
     onSuccess: (data) => {
       setAuth(data.user, data.organizations);
+      addToast('Login realizado com sucesso!', 'success');
       const from = (location.state as any)?.from?.pathname || '/organizations';
       navigate(from, { replace: true });
     },
     onError: (error: any) => {
-      setServerError(
-        error.response?.data?.message || 'Credenciais inválidas ou erro no servidor.'
-      );
+      const message = error.response?.data?.message || 'Credenciais inválidas ou erro no servidor.';
+      addToast(message, 'error');
     },
   });
 
   const onSubmit = (data: LoginFormData) => {
-    setServerError(null);
     // Validação manual simples já que não temos o resolver instalado
     const result = loginSchema.safeParse(data);
     if (!result.success) return;
@@ -66,16 +65,6 @@ export default function LoginPage() {
 
         <GlassCard className="!p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {serverError && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-3 text-red-400 text-sm"
-              >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {serverError}
-              </motion.div>
-            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-400 ml-1">E-mail</label>

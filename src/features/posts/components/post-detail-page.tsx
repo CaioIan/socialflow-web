@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { postsService, type PostStatus } from '../api/posts-service';
 import { postCommentsService } from '../api/post-comments-service';
-import { InstagramPreview } from '@/shared/components/instagram-preview';
 import { GlassCard } from '@/shared/components/glass-card';
 import { ReplaceAssetModal } from './replace-asset-modal';
 import { AdjustmentRequestModal } from './adjustment-request-modal';
@@ -19,7 +18,8 @@ import {
   RotateCw,
   Pencil,
   ChevronRight,
-  Download
+  Download,
+  Loader2
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -94,11 +94,11 @@ export default function PostDetailPage() {
 
       // 2. Atualizar o status
       await updateStatusMutation.mutateAsync('ALTERATION_REQUESTED');
-      
+
       // 3. Sucesso: fechar modal e avisar
       setIsAdjustmentModalOpen(false);
       addToast("Solicitação de ajuste enviada com sucesso!", "success");
-      
+
       // 4. Atualizar dados na tela
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
@@ -202,7 +202,7 @@ export default function PostDetailPage() {
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Briefing Operacional</h4>
                   <p className="text-sm text-zinc-400 leading-relaxed bg-white/2 border border-white/5 rounded-2xl p-5 italic">
-                    "{post.briefing || 'Nenhum briefing fornecido.'}"
+                    {post.briefing || 'Nenhum briefing fornecido.'}
                   </p>
                 </div>
 
@@ -234,15 +234,15 @@ export default function PostDetailPage() {
                         className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] disabled:opacity-50 disabled:grayscale"
                       >
                         <CheckCircle className="w-5 h-5" />
-                        Aprovar Postagém
+                        Aprovar Post
                       </button>
                     )}
                     {post.status !== 'CANCELLED' && (
                       <button
                         onClick={() => setIsAdjustmentModalOpen(true)}
                         disabled={
-                          updateStatusMutation.isPending || 
-                          !post.currentVersionId || 
+                          updateStatusMutation.isPending ||
+                          !post.currentVersionId ||
                           post.status === 'ALTERATION_REQUESTED' ||
                           post.status === 'APPROVED'
                         }
@@ -296,7 +296,7 @@ export default function PostDetailPage() {
                               {new Date(comment.createdAt).toLocaleDateString()} {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {comment.authorUserId === user?.id && (
-                              <button 
+                              <button
                                 onClick={() => setIsAdjustmentModalOpen(true)}
                                 className="p-1 hover:bg-white/10 rounded transition-colors text-zinc-500 hover:text-white"
                                 title="Editar comentário"
@@ -330,35 +330,56 @@ export default function PostDetailPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-4"
           >
-            {/* Desktop Preview */}
-            <div className="hidden lg:block">
-              <InstagramPreview
-                feedUrl={feedUrl}
-                storiesUrl={storiesUrl}
-                username={orgId || 'socialflow'}
-                caption={post.captionFixed}
-              />
-            </div>
-
-            {/* Download Buttons (Desktop Only) */}
-            <div className="hidden lg:flex gap-3">
+            {/* Desktop Preview: Raw Art View */}
+            <div className="hidden lg:flex flex-col gap-10">
               {feedUrl && (
-                <button
-                  onClick={() => handleDownload(feedUrl, 'feed')}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4 text-primary" />
-                  Download Feed (HD)
-                </button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Arte do Feed</h3>
+                    <button
+                      onClick={() => handleDownload(feedUrl, 'feed')}
+                      className="flex items-center gap-2 text-primary hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider group"
+                    >
+                      <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      Baixar HD
+                    </button>
+                  </div>
+                  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20 group cursor-zoom-in">
+                    <img
+                      src={feedUrl}
+                      className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+                      alt="Arte Feed"
+                    />
+                  </div>
+                </div>
               )}
+
               {storiesUrl && (
-                <button
-                  onClick={() => handleDownload(storiesUrl, 'stories')}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4 text-primary" />
-                  Download Stories (HD)
-                </button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Arte do Stories</h3>
+                    <button
+                      onClick={() => handleDownload(storiesUrl, 'stories')}
+                      className="flex items-center gap-2 text-primary hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider group"
+                    >
+                      <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      Baixar HD
+                    </button>
+                  </div>
+                  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20 aspect-[9/16] group cursor-zoom-in">
+                    <img
+                      src={storiesUrl}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      alt="Arte Stories"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!feedUrl && !storiesUrl && (
+                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
+                  <p className="text-zinc-600 font-medium">Nenhuma arte disponível para esta versão.</p>
+                </div>
               )}
             </div>
 
@@ -371,7 +392,7 @@ export default function PostDetailPage() {
                     <div className="min-w-full snap-center space-y-2 relative">
                       <div className="flex items-center justify-between px-2">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Arte do Feed</span>
-                        <button 
+                        <button
                           onClick={() => handleDownload(feedUrl, 'feed')}
                           className="flex items-center gap-1.5 text-primary hover:text-white transition-colors text-[10px] font-bold uppercase"
                         >
@@ -384,12 +405,12 @@ export default function PostDetailPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {storiesUrl && (
                     <div className="min-w-full snap-center space-y-2 relative">
                       <div className="flex items-center justify-between px-2">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Arte do Stories</span>
-                        <button 
+                        <button
                           onClick={() => handleDownload(storiesUrl, 'stories')}
                           className="flex items-center gap-1.5 text-primary hover:text-white transition-colors text-[10px] font-bold uppercase"
                         >

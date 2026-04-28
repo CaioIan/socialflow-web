@@ -8,12 +8,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationsService } from '@/features/organizations/api/organizations-service';
 import { campaignsService } from '../api/campaigns-service';
 import { CreateCampaignModal } from './create-campaign-modal';
+import { useToastStore } from '@/stores/use-toast-store';
 
 export default function CampaignsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const { addToast } = useToastStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any>(undefined);
   
@@ -46,7 +48,11 @@ export default function CampaignsPage() {
     mutationFn: campaignsService.deactivate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns', id] });
-    }
+      addToast('Campanha arquivada com sucesso!', 'success');
+    },
+    onError: () => {
+      addToast('Erro ao arquivar campanha.', 'error');
+    },
   });
 
   if (isLoadingOrg || isLoadingCampaigns) {
