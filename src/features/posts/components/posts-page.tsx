@@ -29,7 +29,7 @@ type TabType = 'pending' | 'approved';
 export default function PostsPage() {
   const { orgId, id: campaignId } = useParams<{ orgId: string, id: string }>();
   const { user } = useAuthStore();
-  const { hasAccess, isLoading: isCheckingAccess } = useOrganizationAccess(orgId);
+  const { hasAccess } = useOrganizationAccess(orgId);
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

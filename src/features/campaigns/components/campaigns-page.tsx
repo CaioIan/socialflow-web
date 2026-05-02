@@ -17,7 +17,7 @@ export default function CampaignsPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const { addToast } = useToastStore();
-  const { hasAccess, isLoading: isCheckingAccess } = useOrganizationAccess(id);
+  const { hasAccess } = useOrganizationAccess(id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any>(undefined);
   

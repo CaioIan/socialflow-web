@@ -31,7 +31,7 @@ export default function PostDetailPage() {
   const { orgId, campId, postId } = useParams<{ orgId: string, campId: string, postId: string }>();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const { hasAccess, isLoading: isCheckingAccess } = useOrganizationAccess(orgId);
+  const { hasAccess } = useOrganizationAccess(orgId);
   const { addToast } = useToastStore();
   const [copied, setCopied] = useState(false);
   const [isReplaceAssetModalOpen, setIsReplaceAssetModalOpen] = useState(false);

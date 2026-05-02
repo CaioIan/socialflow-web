@@ -36,10 +36,10 @@ export function AdminDashboardPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <GlassCard key={i} className="p-8 h-48 animate-pulse bg-white/5" />
+            <GlassCard key={i} className="p-8 h-48 animate-pulse bg-white/5"><div /></GlassCard>
           ))}
         </div>
-        <GlassCard className="p-8 h-48 animate-pulse bg-white/5" />
+        <GlassCard className="p-8 h-48 animate-pulse bg-white/5"><div /></GlassCard>
       </div>
     );
   }
