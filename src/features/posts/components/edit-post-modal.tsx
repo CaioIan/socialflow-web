@@ -73,7 +73,7 @@ export function EditPostModal({ isOpen, onClose, postId, campaignId }: EditPostM
     <Modal isOpen={isOpen} onClose={onClose} title="Editar Post" className="max-w-xl">
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Loader2 className="w-6 h-6 animate-spin loader-gradient" />
         </div>
       ) : isSuccess ? (
         <div className="py-12 flex flex-col items-center justify-center space-y-4">

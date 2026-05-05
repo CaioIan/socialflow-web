@@ -28,6 +28,10 @@ export interface Post {
   assets?: Array<{ id: string; cloudinaryUrl: string; assetType: string; createdAt: string }>;
   currentVersion?: { feedUrl: string | null; storiesUrl: string | null };
   statusHistory?: StatusHistoryRecord[];
+  organization?: {
+    isActive: boolean;
+    name: string;
+  };
 }
 
 export interface CreatePostRequest {

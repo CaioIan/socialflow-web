@@ -12,7 +12,6 @@ import {
   Building,
   Plus,
   X,
-  Trash2,
   RefreshCw,
   CheckCircle2,
   Loader2,
@@ -119,7 +118,7 @@ export default function TeamPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+        <Loader2 className="w-8 h-8 animate-spin loader-gradient mb-4" />
         <p>Carregando equipe...</p>
       </div>
     );
@@ -138,7 +137,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_oklch(var(--primary)/0.2)]"
+          className="btn-primary px-5 py-3 rounded-2xl flex items-center gap-2"
         >
           <UserPlus className="w-5 h-5" />
           Novo Usuário
@@ -151,7 +150,7 @@ export default function TeamPage() {
           <button
             onClick={() => handleTabChange('DESIGNER')}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'DESIGNER'
-              ? 'bg-primary text-white shadow-lg'
+              ? 'btn-primary'
               : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
           >
@@ -160,7 +159,7 @@ export default function TeamPage() {
           <button
             onClick={() => handleTabChange('CLIENT')}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'CLIENT'
-              ? 'bg-primary text-white shadow-lg'
+              ? 'btn-primary'
               : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
           >
@@ -169,7 +168,7 @@ export default function TeamPage() {
           <button
             onClick={() => handleTabChange('INACTIVE')}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'INACTIVE'
-              ? 'bg-red-500 text-white shadow-lg'
+              ? 'bg-red-500/80 text-white'
               : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
           >
@@ -234,7 +233,7 @@ export default function TeamPage() {
                   </div>
 
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary">
+                    <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary">
                       <Building className="w-7 h-7" />
                     </div>
                     <div>
@@ -269,7 +268,7 @@ export default function TeamPage() {
               <GlassCard className="p-6 h-full flex flex-col group hover:border-primary/30 transition-all border-white/5">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary text-xl font-bold">
+                    <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary text-xl font-bold">
                       {u.name?.charAt(0) || 'U'}
                     </div>
                     <div>

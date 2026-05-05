@@ -72,7 +72,7 @@ export function IntegrationConfigModal({ isOpen, onClose, organizationId, organi
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary/50 via-primary to-primary/50" />
           
           <button 
             onClick={onClose}
@@ -95,7 +95,7 @@ export function IntegrationConfigModal({ isOpen, onClose, organizationId, organi
 
           {isLoadingConfig ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <Loader2 className="w-8 h-8 animate-spin loader-gradient" />
             </div>
           ) : (
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
@@ -138,7 +138,7 @@ export function IntegrationConfigModal({ isOpen, onClose, organizationId, organi
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white py-3 rounded-2xl font-bold transition-all shadow-[0_0_20px_oklch(var(--primary)/0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 btn-primary py-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {mutation.isPending ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>

@@ -40,6 +40,11 @@ export const organizationsService = {
     await api.delete(`/organizations/${id}`);
   },
 
+  reactivate: async (id: string) => {
+    const response = await api.patch<Organization>(`/organizations/${id}/reactivate`);
+    return response.data;
+  },
+
   getIntegrationConfig: async (id: string) => {
     const response = await api.get<{ n8nWebhookUrl: string; isActive: boolean }>(`/organizations/${id}/integration`);
     return response.data;

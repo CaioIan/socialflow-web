@@ -60,7 +60,7 @@ export default function PostDetailPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ status, scheduledFor }: { status: PostStatus, scheduledFor?: Date }) => 
+    mutationFn: ({ status, scheduledFor }: { status: PostStatus, scheduledFor?: Date }) =>
       postsService.updateStatus(postId!, status, scheduledFor),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
@@ -159,8 +159,8 @@ export default function PostDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-        <p>Carregando preview...</p>
+        <Loader2 className="w-8 h-8 animate-spin loader-gradient mb-4" />
+        <p className="animate-pulse">Carregando preview...</p>
       </div>
     );
   }
@@ -262,11 +262,19 @@ export default function PostDetailPage() {
                     </div>
                   )}
 
+                  {post.organization?.isActive === false && (
+                    <div className="mb-6 flex flex-col items-center gap-2 p-6 bg-red-500/10 border border-red-500/20 rounded-[2rem] text-red-500 text-center animate-pulse">
+                      <AlertCircle className="w-8 h-8 mb-2" />
+                      <p className="text-xs font-bold uppercase tracking-widest">Organização Inativa</p>
+                      <p className="text-[10px] opacity-80 max-w-[200px]">Ative a organização novamente no painel administrativo.</p>
+                    </div>
+                  )}
+
                   <div className="flex flex-col sm:flex-row gap-4">
                     {post.status !== 'APPROVED' && (
                       <button
                         onClick={handleApproveClick}
-                        disabled={updateStatusMutation.isPending || !post.currentVersionId}
+                        disabled={updateStatusMutation.isPending || !post.currentVersionId || post.organization?.isActive === false}
                         className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] disabled:opacity-50 disabled:grayscale"
                       >
                         <CheckCircle className="w-5 h-5" />
@@ -279,7 +287,8 @@ export default function PostDetailPage() {
                         disabled={
                           updateStatusMutation.isPending ||
                           !post.currentVersionId ||
-                          post.status === 'ALTERATION_REQUESTED'
+                          post.status === 'ALTERATION_REQUESTED' ||
+                          post.organization?.isActive === false
                         }
                         className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(245,158,11,0.2)] disabled:opacity-50 disabled:grayscale"
                       >
@@ -413,11 +422,11 @@ export default function PostDetailPage() {
                       onClick={() => handleDownload(storiesUrl, 'stories')}
                       className="flex items-center gap-2 text-primary hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider group"
                     >
-                      <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <Download className="w-4 h-4 group-hover:scale-110" />
                       Baixar HD
                     </button>
                   </div>
-                  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20 aspect-[9/16] group cursor-zoom-in">
+                  <div className="rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20 aspect-9/16 group cursor-zoom-in">
                     <img
                       src={storiesUrl}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -428,7 +437,7 @@ export default function PostDetailPage() {
               )}
 
               {!feedUrl && !storiesUrl && (
-                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
+                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/1">
                   <p className="text-zinc-600 font-medium">Nenhuma arte disponível para esta versão.</p>
                 </div>
               )}
@@ -445,7 +454,7 @@ export default function PostDetailPage() {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Arte do Feed</span>
                         <button
                           onClick={() => handleDownload(feedUrl, 'feed')}
-                          className="flex items-center gap-1.5 text-primary hover:text-white transition-colors text-[10px] font-bold uppercase"
+                          className="flex items-center gap-1.5 text-primary hover:text-white text-[10px] font-bold uppercase"
                         >
                           <Download className="w-3.5 h-3.5" />
                           Baixar HD
@@ -463,20 +472,20 @@ export default function PostDetailPage() {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Arte do Stories</span>
                         <button
                           onClick={() => handleDownload(storiesUrl, 'stories')}
-                          className="flex items-center gap-1.5 text-primary hover:text-white transition-colors text-[10px] font-bold uppercase"
+                          className="flex items-center gap-1.5 text-primary hover:text-white text-[10px] font-bold uppercase"
                         >
                           <Download className="w-3.5 h-3.5" />
                           Baixar HD
                         </button>
                       </div>
-                      <div className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] bg-black/20 aspect-[9/16]">
+                      <div className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] bg-black/20 aspect-9/16">
                         <img src={storiesUrl} className="w-full h-full object-cover" alt="Arte Stories" />
                       </div>
                     </div>
                   )}
 
                   {!feedUrl && !storiesUrl && (
-                    <div className="min-w-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem] bg-white/[0.01]">
+                    <div className="min-w-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem] bg-white/1">
                       <p className="text-zinc-600 text-sm">Nenhuma arte disponível para esta versão.</p>
                     </div>
                   )}
@@ -511,7 +520,8 @@ export default function PostDetailPage() {
                       setSelectedAssetType('FEED');
                       setIsReplaceAssetModalOpen(true);
                     }}
-                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-all"
+                    disabled={!post.organization?.isActive}
+                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
                     <RotateCw className="w-4 h-4" />
                     Reuplocar Feed
@@ -525,7 +535,8 @@ export default function PostDetailPage() {
                       setSelectedAssetType('STORIES');
                       setIsReplaceAssetModalOpen(true);
                     }}
-                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition-all"
+                    disabled={!post.organization?.isActive}
+                    className="w-full py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
                     <RotateCw className="w-4 h-4" />
                     Reuplocar Stories
