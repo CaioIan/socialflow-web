@@ -23,6 +23,8 @@ export default function CampaignsPage() {
   const [editingCampaign, setEditingCampaign] = useState<any>(undefined);
 
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+  const isDesigner = user?.role?.toUpperCase() === 'DESIGNER';
+  const isClient = user?.role?.toUpperCase() === 'CLIENT';
 
   const handleEdit = (campaign: any) => {
     setEditingCampaign(campaign);
@@ -45,7 +47,8 @@ export default function CampaignsPage() {
   // Busca a lista real de campanhas
   const { data: campaigns = [], isLoading: isLoadingCampaigns } = useQuery({
     queryKey: ['campaigns', id],
-    queryFn: campaignsService.getAll,
+    queryFn: () => campaignsService.getAll(),
+    enabled: !!id,
   });
 
   const deactivateMutation = useMutation({
@@ -83,7 +86,11 @@ export default function CampaignsPage() {
             <span className="text-zinc-500 font-normal shrink-0">Campanhas /</span>
             <span className="truncate">{activeOrg?.name || 'Empresa'}</span>
           </h1>
-          <p className="text-zinc-500 text-sm">Pastas de artes e cronogramas mensais.</p>
+          <p className="text-zinc-500 text-sm">
+            {isAdmin && 'Pastas de artes e cronogramas mensais das campanhas.'}
+            {isDesigner && 'Campanhas onde você está alocado para fazer upload de artes.'}
+            {isClient && 'Campanhas da sua organização para acompanhar e aprovar posts.'}
+          </p>
         </div>
 
         {isAdmin && (
@@ -189,6 +196,7 @@ export default function CampaignsPage() {
       <CreateCampaignModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        organizationId={id}
         initialData={editingCampaign}
       />
     </div>

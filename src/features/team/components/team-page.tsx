@@ -132,7 +132,7 @@ export default function TeamPage() {
             <Users className="w-8 h-8 text-primary" />
             Gestão de Equipe
           </h1>
-          <p className="text-zinc-500 mt-1">Gerencie designers, clientes e suas alocações.</p>
+          <p className="text-zinc-500 mt-1">Gerencie usuários, designers, clientes e suas alocações nas organizações.</p>
         </div>
 
         <button

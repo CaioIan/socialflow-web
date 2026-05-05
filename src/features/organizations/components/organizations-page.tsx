@@ -31,6 +31,8 @@ export default function OrganizationsPage() {
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
 
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+  const isDesigner = user?.role?.toUpperCase() === 'DESIGNER';
+  const isClient = user?.role?.toUpperCase() === 'CLIENT';
 
   // Busca a lista real de organizações da API
   const { data: organizations = [], isLoading, error } = useQuery({
@@ -65,15 +67,17 @@ export default function OrganizationsPage() {
   };
 
   const handleSelectOrganization = (organizationId: string) => {
-    // 1. Atualiza estado global IMEDIATAMENTE
-    setCurrentOrganization(organizationId);
-    
-    // 2. Navega IMEDIATAMENTE (otimista)
-    navigate(`/organizations/${organizationId}/campaigns`, { replace: true });
-    
-    // 3. Chama API em background (não bloqueia a navegação)
-    authService.selectOrganization(organizationId).catch(() => {
-      addToast('Erro ao sincronizar organização com o servidor.', 'error');
+    // Aguarda o novo token com organizationId ANTES de navegar
+    selectMutation.mutate(organizationId, {
+      onSuccess: () => {
+        // Depois que obtém o novo token, atualiza estado
+        setCurrentOrganization(organizationId);
+        // E só aí navega
+        navigate(`/organizations/${organizationId}/campaigns`, { replace: true });
+      },
+      onError: () => {
+        addToast('Erro ao sincronizar organização com o servidor.', 'error');
+      }
     });
   };
 
@@ -99,6 +103,10 @@ export default function OrganizationsPage() {
     },
   });
 
+  const selectMutation = useMutation({
+    mutationFn: authService.selectOrganization,
+  });
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-zinc-500">
@@ -121,7 +129,11 @@ export default function OrganizationsPage() {
       <header className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-white">Organizações</h1>
-          <p className="text-zinc-500">Gerencie seus clientes e tenants do SocialFlow.</p>
+          <p className="text-zinc-500">
+            {isAdmin && 'Gerencie seus clientes e tenants do SocialFlow.'}
+            {isDesigner && 'Visualize e acesse as organizações onde você foi alocado.'}
+            {isClient && 'Veja sua organização e gerencie campanhas.'}
+          </p>
         </div>
 
         {isAdmin && (
@@ -167,6 +179,7 @@ export default function OrganizationsPage() {
         {filteredOrganizations.map((org, index) => {
           const orgId = org.id;
           const isActive = orgId === currentOrganizationId;
+          const isLoading = selectMutation.isPending && selectMutation.variables === orgId;
 
           return (
             <motion.div
@@ -174,16 +187,25 @@ export default function OrganizationsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => handleSelectOrganization(orgId)}
-              className="cursor-pointer group"
+              onClick={() => !isLoading && org.isActive && handleSelectOrganization(orgId)}
+              className={cn("group", org.isActive ? "cursor-pointer" : "cursor-not-allowed")}
             >
               <GlassCard
                 className={`flex flex-col h-full border-t-4 transition-all duration-500 relative overflow-hidden active:scale-[0.98] ${isActive ? 'border-t-primary bg-primary/3' : 'border-t-transparent'
-                  }`}
+                  } ${isLoading ? 'opacity-75' : ''}`}
               >
+                {/* Loading Overlay */}
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <p className="text-xs text-zinc-300 font-medium">Entrando...</p>
+                    </div>
+                  </div>
+                )}
                 {/* Botões de Ação Rápida (Admin) */}
                 {isAdmin && (
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
+                  <div className={`absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}>
                     {activeTab === 'ACTIVE' && (
                       <>
                         <button
@@ -265,11 +287,17 @@ export default function OrganizationsPage() {
                     className={cn(
                       "w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all",
                       isActive ? "btn-primary" : "bg-white/5 group-hover:bg-primary/20 text-white",
-                      !org.isActive && "opacity-50 cursor-not-allowed grayscale"
+                      !org.isActive && "opacity-50 cursor-not-allowed grayscale",
+                      isLoading && "opacity-70 pointer-events-none"
                     )}
                   >
                     {!org.isActive ? (
                       "Organização Inativa"
+                    ) : isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Entrando...
+                      </>
                     ) : (
                       <>
                         Entrar na Organização

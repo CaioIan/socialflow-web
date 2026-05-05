@@ -20,9 +20,10 @@ interface EditPostModalProps {
   onClose: () => void;
   postId: string;
   campaignId: string;
+  orgId: string;
 }
 
-export function EditPostModal({ isOpen, onClose, postId, campaignId }: EditPostModalProps) {
+export function EditPostModal({ isOpen, onClose, postId, campaignId, orgId }: EditPostModalProps) {
   const queryClient = useQueryClient();
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -55,7 +56,7 @@ export function EditPostModal({ isOpen, onClose, postId, campaignId }: EditPostM
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts', campaignId] });
+      queryClient.invalidateQueries({ queryKey: ['posts', orgId, campaignId] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       setIsSuccess(true);
       setTimeout(() => {

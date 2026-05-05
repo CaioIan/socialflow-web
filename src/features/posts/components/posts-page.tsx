@@ -46,9 +46,9 @@ export default function PostsPage() {
 
   // Detalhes da Campanha
   const { data: campaign } = useQuery({
-    queryKey: ['campaign', campaignId],
+    queryKey: ['campaign', orgId, campaignId],
     queryFn: () => campaignsService.getAll().then(res => res.find(c => c.id === campaignId)),
-    enabled: !!campaignId
+    enabled: !!campaignId && !!orgId
   });
 
   // Busca detalhes da organização para checar isActive
@@ -61,9 +61,9 @@ export default function PostsPage() {
 
   // Lista de Posts
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ['posts', campaignId],
+    queryKey: ['posts', orgId, campaignId],
     queryFn: () => postsService.getByCampaign(campaignId!),
-    enabled: !!campaignId
+    enabled: !!campaignId && !!orgId
   });
 
   // Filtrar posts por status - ambos mantêm ordem cronológica
@@ -108,7 +108,11 @@ export default function PostsPage() {
             <span className="text-zinc-500 font-normal shrink-0">Posts /</span>
             {campaign?.title || 'Campanha'}
           </h1>
-          <p className="text-zinc-500 text-sm">Cronograma de postagens e artes.</p>
+          <p className="text-zinc-500 text-sm">
+            {isAdmin && 'Cronograma de postagens, artes e versões para aprovação.'}
+            {isDesigner && 'Faça upload de artes e versões para aprovação do cliente.'}
+            {isClient && 'Visualize, comente e aprove posts e artes da campanha.'}
+          </p>
         </div>
 
         {isAdmin && (
@@ -358,6 +362,7 @@ export default function PostsPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         campaignId={campaignId!}
+        orgId={orgId!}
       />
 
       {selectedPostId && (
@@ -370,6 +375,7 @@ export default function PostsPage() {
             }}
             postId={selectedPostId}
             campaignId={campaignId!}
+            orgId={orgId!}
           />
 
           <DeletePostModal
@@ -391,6 +397,7 @@ export default function PostsPage() {
             }}
             postId={selectedPostId}
             campaignId={campaignId!}
+            orgId={orgId!}
           />
         </>
       )}

@@ -64,7 +64,7 @@ export default function PostDetailPage() {
       postsService.updateStatus(postId!, status, scheduledFor),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
-      queryClient.invalidateQueries({ queryKey: ['posts', campId] });
+      queryClient.invalidateQueries({ queryKey: ['posts', orgId, campId] });
       addToast("Post atualizado com sucesso!", "success");
       setIsLateModalOpen(false);
     },
@@ -561,6 +561,7 @@ export default function PostDetailPage() {
           assetType={selectedAssetType}
           postId={postId!}
           campaignId={campId!}
+          orgId={orgId!}
           currentImageUrl={selectedAssetType === 'FEED' ? feedUrl || undefined : storiesUrl || undefined}
         />
       )}
