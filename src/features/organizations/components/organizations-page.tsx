@@ -9,7 +9,9 @@ import { authService } from '@/features/auth/api/auth-service';
 import { organizationsService } from '../api/organizations-service';
 import { useNavigate } from 'react-router-dom';
 import { CreateOrganizationModal } from './create-organization-modal';
+import { IntegrationConfigModal } from './integration-config-modal';
 import { useToastStore } from '@/stores/use-toast-store';
+import { Webhook } from 'lucide-react';
 
 export default function OrganizationsPage() {
   const navigate = useNavigate();
@@ -18,6 +20,9 @@ export default function OrganizationsPage() {
   const { addToast } = useToastStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<{ id: string, name: string } | undefined>(undefined);
+  
+  const [isIntegrationModalOpen, setIsIntegrationModalOpen] = useState(false);
+  const [integrationOrg, setIntegrationOrg] = useState<{ id: string, name: string } | undefined>(undefined);
 
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
 
@@ -35,6 +40,16 @@ export default function OrganizationsPage() {
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
     setEditingOrg(undefined);
+  };
+
+  const handleOpenIntegration = (org: { id: string, name: string }) => {
+    setIntegrationOrg(org);
+    setIsIntegrationModalOpen(true);
+  };
+
+  const handleCloseIntegration = () => {
+    setIsIntegrationModalOpen(false);
+    setIntegrationOrg(undefined);
   };
 
   const selectMutation = useMutation({
@@ -130,6 +145,16 @@ export default function OrganizationsPage() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleOpenIntegration({ id: orgId, name: org.name });
+                      }}
+                      title="Configurar n8n Webhook"
+                      className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-xl bg-black/40 md:bg-white/5 hover:bg-white/10 text-white md:text-zinc-400 md:hover:text-white transition-all shadow-xl border border-white/5 active:scale-90"
+                    >
+                      <Webhook className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if(window.confirm('Deseja realmente desativar esta organização?')) {
                           deleteMutation.mutate(orgId);
                         }
@@ -213,6 +238,13 @@ export default function OrganizationsPage() {
         isOpen={isCreateModalOpen} 
         onClose={handleCloseModal} 
         initialData={editingOrg}
+      />
+
+      <IntegrationConfigModal
+        isOpen={isIntegrationModalOpen}
+        onClose={handleCloseIntegration}
+        organizationId={integrationOrg?.id}
+        organizationName={integrationOrg?.name}
       />
     </div>
   );

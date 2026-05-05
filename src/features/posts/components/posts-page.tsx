@@ -29,7 +29,7 @@ type TabType = 'pending' | 'approved';
 export default function PostsPage() {
   const { orgId, id: campaignId } = useParams<{ orgId: string, id: string }>();
   const { user } = useAuthStore();
-  const { hasAccess } = useOrganizationAccess(orgId);
+  useOrganizationAccess(orgId);
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -189,6 +189,12 @@ export default function PostsPage() {
                     <Icon className="w-3 h-3" />
                     {status.label}
                   </div>
+                  {post.status !== 'APPROVED' && new Date(post.scheduledFor) < new Date() && (
+                    <div className="px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse">
+                      <AlertCircle className="w-3 h-3" />
+                      Atrasado
+                    </div>
+                  )}
                   <div 
                     onClick={(e) => e.preventDefault()} // Impede o link do card de disparar ao clicar no menu
                     className="relative z-20"
@@ -237,19 +243,26 @@ export default function PostsPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-white">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex flex-col items-center justify-center border border-white/5">
-                        <span className="text-[10px] uppercase font-bold text-zinc-500 leading-none">
-                          {new Date(post.scheduledFor).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
-                        </span>
-                        <span className="text-lg font-bold leading-none mt-0.5">
-                          {new Date(post.scheduledFor).getDate()}
-                        </span>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 flex flex-col items-center justify-center border border-white/5 shrink-0">
+                            <span className="text-[10px] uppercase font-bold text-zinc-500 leading-none">
+                              {new Date(post.scheduledFor).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
+                            </span>
+                            <span className="text-lg font-bold leading-none mt-0.5">
+                              {new Date(post.scheduledFor).getDate()}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-white leading-none">
+                              {new Date(post.scheduledFor).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span className="text-[10px] font-medium text-zinc-500 mt-1 uppercase tracking-wider">
+                              Agendado
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-xs font-medium text-zinc-500 hidden sm:inline">
-                        Agendado
-                      </span>
-                    </div>
 
                     <div className="flex gap-2">
                       {(isAdmin || isDesigner) && (!post.currentVersionId || post.status === 'ALTERATION_REQUESTED') && (

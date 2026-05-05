@@ -38,5 +38,15 @@ export const organizationsService = {
 
   delete: async (id: string) => {
     await api.delete(`/organizations/${id}`);
+  },
+
+  getIntegrationConfig: async (id: string) => {
+    const response = await api.get<{ n8nWebhookUrl: string; isActive: boolean }>(`/organizations/${id}/integration`);
+    return response.data;
+  },
+
+  upsertIntegrationConfig: async (id: string, data: { n8nWebhookUrl: string; isActive?: boolean }) => {
+    const response = await api.post(`/organizations/${id}/integration`, data);
+    return response.data;
   }
 };

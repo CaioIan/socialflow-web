@@ -99,8 +99,11 @@ export const postsService = {
     return response.data;
   },
 
-  updateStatus: async (postId: string, status: PostStatus) => {
-    const response = await api.patch<Post>(`/posts/${postId}/status`, { status });
+  updateStatus: async (postId: string, status: PostStatus, scheduledFor?: Date) => {
+    const response = await api.patch<Post>(`/posts/${postId}/status`, { 
+      status,
+      ...(scheduledFor && { scheduledFor: scheduledFor.toISOString() })
+    });
     return response.data;
   },
 
