@@ -136,11 +136,13 @@
 
 @layer utilities {
   .glass {
-    @apply backdrop-blur-2xl bg-white/5 border border-white/12 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.8)];
+    @apply backdrop-blur-2xl bg-white/5 border border-white/12;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   }
 
   .glass-card {
-    @apply backdrop-blur-2xl bg-white/5 border border-white/12 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.8)] rounded-2xl transition-all duration-300 relative overflow-hidden;
+    @apply backdrop-blur-2xl bg-white/5 border border-white/12 rounded-2xl transition-all duration-300 relative overflow-hidden;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   }
 
   /* EFEITO DE BRILHO NO TOPO DO CARD */
