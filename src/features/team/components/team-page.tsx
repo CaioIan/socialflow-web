@@ -111,6 +111,16 @@ export default function TeamPage() {
     )
   ) as UserWithOrgs[];
 
+  const unallocatedUsers = activeTab === 'CLIENT' && !selectedOrg
+    ? users?.filter(u =>
+        u.role === 'CLIENT' &&
+        u.organizations?.length === 0 && (
+          u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ) as UserWithOrgs[]
+    : [];
+
   const filteredOrganizations = organizations?.filter(org =>
     org.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -216,45 +226,114 @@ export default function TeamPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
           {activeTab === 'CLIENT' && !selectedOrg ? (
-            // Organizations Grid
-            filteredOrganizations?.map((org) => (
-              <motion.div
-                key={org.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                onClick={() => setSelectedOrg(org)}
-                className="cursor-pointer"
-              >
-                <GlassCard className="p-6 h-full flex flex-col group hover:border-primary/50 transition-all border-white/5 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                    <Building className="w-32 h-32 -mr-16 -mt-16" />
-                  </div>
+            // Organizations Grid + Unallocated Users
+            <>
+              {unallocatedUsers && unallocatedUsers.length > 0 && (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="sm:col-span-2 lg:col-span-3"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-2">
+                      <div className="h-1 w-6 bg-linear-to-r from-amber-500 to-transparent rounded-full" />
+                      <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest">Usuários Sem Alocação</h3>
+                      <div className="flex-1 h-px bg-white/5" />
+                      <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded font-bold">
+                        {unallocatedUsers.length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {unallocatedUsers?.map((u) => (
+                        <motion.div
+                          key={u.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                        >
+                          <GlassCard className="p-6 h-full flex flex-col group hover:border-amber-500/30 transition-all border-amber-500/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                              <Users className="w-32 h-32 -mr-16 -mt-16" />
+                            </div>
 
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary">
-                      <Building className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white text-xl group-hover:text-primary transition-colors">
-                        {org.name}
-                      </h3>
-                      <p className="text-zinc-500 text-xs">
-                        {org.users?.filter(m => m.user.role !== 'ADMIN').length || 0} membros vinculados
-                      </p>
-                    </div>
-                  </div>
+                            <div className="flex items-start justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-bold">
+                                  {u.name?.charAt(0) || 'U'}
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-white text-lg group-hover:text-amber-400 transition-colors">
+                                    {u.name || 'Sem nome'}
+                                  </h3>
+                                  <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                                    <Mail className="w-3 h-3" />
+                                    {u.email}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
 
-                  <div className="mt-auto flex justify-end">
-                    <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                      Ver Clientes
-                      <ChevronRight className="w-4 h-4" />
+                            <div className="mt-auto pt-4 border-t border-amber-500/10">
+                              <button
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setIsLinkModalOpen(true);
+                                }}
+                                className="w-full py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Plus className="w-4 h-4" />
+                                Alocar a Organização
+                              </button>
+                            </div>
+                          </GlassCard>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
-                </GlassCard>
-              </motion.div>
-            ))
+                </motion.div>
+              )}
+              {filteredOrganizations?.map((org) => (
+                <motion.div
+                  key={org.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={() => setSelectedOrg(org)}
+                  className="cursor-pointer"
+                >
+                  <GlassCard className="p-6 h-full flex flex-col group hover:border-primary/50 transition-all border-white/5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                      <Building className="w-32 h-32 -mr-16 -mt-16" />
+                    </div>
+
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 border border-white/10 flex items-center justify-center text-primary">
+                        <Building className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-xl group-hover:text-primary transition-colors">
+                          {org.name}
+                        </h3>
+                        <p className="text-zinc-500 text-xs">
+                          {org.users?.filter(m => m.user.role !== 'ADMIN').length || 0} membros vinculados
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto flex justify-end">
+                      <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                        Ver Clientes
+                        <ChevronRight className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </>
           ) : (
             // Users Grid (Designers, Inactive, or selected Org clients)
             filteredUsers?.map((u) => (

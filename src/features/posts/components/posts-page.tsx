@@ -279,9 +279,7 @@ export default function PostsPage() {
                             <span className="text-xs font-bold text-white leading-none">
                               {new Date(post.scheduledFor).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                            <span className="text-[10px] font-medium text-zinc-500 mt-1 uppercase tracking-wider">
-                              Agendado
-                            </span>
+                          
                           </div>
                         </div>
                       </div>

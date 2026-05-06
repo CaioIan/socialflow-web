@@ -17,7 +17,7 @@ export const usersService = {
     return response.data;
   },
 
-  create: async (data: { email: string; passwordHash: string; name: string; role: string }) => {
+  create: async (data: { email: string; passwordHash: string; name: string; role: string; organizationId?: string }) => {
     const response = await api.post<User>('/users', data);
     return response.data;
   },
